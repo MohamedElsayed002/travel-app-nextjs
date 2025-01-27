@@ -1,10 +1,17 @@
 
 
-import React from 'react'
+import { FaStar, FaRegStar } from "react-icons/fa"
+const Rating = ({ rating }: { rating: number }) => {
 
-const Rating = () => {
+  const stars = Array.from({ length: 5 }, (_, i) => i + 1 <= rating)
+
   return (
-    <div>Rating</div>
+    <div className="flex items-center gap-x-1">
+      {stars.map((isFilled, i) => {
+        const className = `w-3 h-3 ${isFilled ? 'text-primary' : 'text-grey-400'}`
+        return isFilled ? <FaStar className={className} key={i} /> : <FaRegStar className={className} key={i} />
+      })}
+    </div>
   )
 }
 
