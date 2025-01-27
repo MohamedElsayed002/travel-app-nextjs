@@ -1,5 +1,6 @@
 import FavoriteToggleButton from "@/components/card/FavoriteToggleButton";
 import PropertyRating from "@/components/card/PropertyRating";
+import RatingInput from "@/components/form/RatingInput";
 import Amenities from "@/components/properties/Amenities";
 import BookingCalendar from "@/components/properties/BookingCalendar";
 import BreadCrumbs from "@/components/properties/BreadCrumbs";
@@ -9,6 +10,8 @@ import ImageContainer from "@/components/properties/ImageContainer";
 import PropertiesDetails from "@/components/properties/PropertyDetials";
 import ShareButton from "@/components/properties/ShareButton";
 import UserInfo from "@/components/properties/UserInfo";
+import PropertyReviews from "@/components/reviews/PropertyReviews";
+import SubmitReview from "@/components/reviews/SubmitReview";
 import { Separator } from "@/components/ui/separator";
 import { fetchPropertyDetails } from "@/utils/actions";
 import { redirect } from "next/navigation";
@@ -55,7 +58,8 @@ async function PropertyDetailsPage({ params }: { params: { id: string } }) {
                     <BookingCalendar />
                 </div>
             </section>
-
+            <SubmitReview propertyId={property.id} />
+            <PropertyReviews propertyId={property.id}/>
         </section>
     )
 

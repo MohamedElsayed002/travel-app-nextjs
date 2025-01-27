@@ -2,7 +2,7 @@
 import { auth, clerkClient, currentUser } from '@clerk/nextjs/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { imageSchema, profileSchema, propertySchema, validateWithZodSchema } from "./schemas"
+import { createReviewSchema, imageSchema, profileSchema, propertySchema, validateWithZodSchema } from "./schemas"
 import db from './db';
 import { uploadImage } from './supabase'
 
@@ -197,50 +197,50 @@ export const fetchProperties = async ({
 
 export const fetchFavoriteId = async ({
     propertyId,
-  }: {
+}: {
     propertyId: string;
-  }) => {
+}) => {
     const user = await getAuthUser();
     const favorite = await db.favorite.findFirst({
-      where: {
-        propertyId,
-        profileId: user.id,
-      },
-      select: {
-        id: true,
-      },
+        where: {
+            propertyId,
+            profileId: user.id,
+        },
+        select: {
+            id: true,
+        },
     });
     return favorite?.id || null;
-  };
+};
 
 
 export const toggleFavoriteAction = async (prevState: {
-    propertyId : string;
+    propertyId: string;
     favoriteId: string | null;
-    pathname : string;
+    pathname: string;
 }) => {
 
     const user = await getAuthUser()
-    const {propertyId,favoriteId,pathname} = prevState
+    const { propertyId, favoriteId, pathname } = prevState
 
     try {
-        if(favoriteId) {
+        if (favoriteId) {
             await db.favorite.delete({
                 where: {
-                    id : favoriteId,
+                    id: favoriteId,
                 }
             })
-        }else {
+        } else {
             await db.favorite.create({
-                data : {
+                data: {
                     propertyId,
                     profileId: user.id
                 }
             })
-        }   
+        }
         revalidatePath(pathname)  // this will trigger a re-fetch of the page with the updated data
-        return {message : favoriteId? 'Removed from Favorites' : 'Added to Favorites'}
-    }catch(error) { 
+        return { message: favoriteId ? 'Removed from Favorites' : 'Added to Favorites' }
+    } catch (error) {
         return renderError(error)
     }
 
@@ -249,18 +249,18 @@ export const toggleFavoriteAction = async (prevState: {
 export const fetchFavorites = async () => {
     const user = await getAuthUser()
     const favorites = await db.favorite.findMany({
-        where : {
-            profileId : user.id
+        where: {
+            profileId: user.id
         },
-        select : {
-            property : {
-                select : {
-                    id : true,
-                    name : true,
+        select: {
+            property: {
+                select: {
+                    id: true,
+                    name: true,
                     tagline: true,
                     country: true,
                     price: true,
-                    image : true
+                    image: true
                 }
             }
         }
@@ -269,13 +269,64 @@ export const fetchFavorites = async () => {
 }
 
 
-export const fetchPropertyDetails = async  (id: string) => {
+export const fetchPropertyDetails = async (id: string) => {
     return db.property.findUnique({
-      where: {
-        id,
-      },
-      include: {
-        profile: true,
-      },
+        where: {
+            id,
+        },
+        include: {
+            profile: true,
+        },
     });
+};
+
+
+export const createReviewAction = async (prevState: any, formData: FormData) => {
+    const user = await getAuthUser()
+    try {
+        const rawData = Object.fromEntries(formData)
+        const validatedFields = validateWithZodSchema(createReviewSchema, rawData)
+
+        await db.review.create({
+            data: {
+                ...validatedFields,
+                profileId: user.id
+            }
+        })
+        revalidatePath(`/properties/${validatedFields.propertyId}`)
+        return { message: 'create review' }
+    } catch (error) {
+        return renderError(error)
+    }
+};
+
+export const fetchPropertyReviews = async (propertyId: string) => {
+    const reviews = await db.review.findMany({
+        where: {
+            propertyId
+        },
+        select: {
+            id: true,
+            rating: true,
+            comment: true,
+            profile: {
+                select: {
+                    firstName: true,
+                    profileImage: true
+                }
+            }
+        },
+        orderBy: {
+            createdAt: 'desc'
+        }
+    })
+    return reviews
+};
+
+export const fetchPropertyReviewsByUser = async () => {
+    return { message: 'fetch user reviews' };
+};
+
+export const deleteReviewAction = async () => {
+    return { message: 'delete  reviews' };
 };
