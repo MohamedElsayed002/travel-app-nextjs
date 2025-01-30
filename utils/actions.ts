@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { createReviewSchema, imageSchema, profileSchema, propertySchema, validateWithZodSchema } from "./schemas"
 import db from './db';
 import { uploadImage } from './supabase'
+import { calculateTotals } from './calculateTotals'
 
 
 const getAuthUser = async () => {
@@ -276,6 +277,12 @@ export const fetchPropertyDetails = async (id: string) => {
         },
         include: {
             profile: true,
+            bookings: {
+                select: {
+                    checkIn: true,
+                    checkOut: true,
+                },
+            },
         },
     });
 };
@@ -326,17 +333,17 @@ export const fetchPropertyReviews = async (propertyId: string) => {
 export const fetchPropertyReviewsByUser = async () => {
     const user = await getAuthUser()
     const reviews = await db.review.findMany({
-        where : {
+        where: {
             profileId: user.id
         },
         select: {
-            id : true,
-            rating : true,
-            comment : true,
+            id: true,
+            rating: true,
+            comment: true,
             property: {
                 select: {
-                    name : true,
-                    image : true
+                    name: true,
+                    image: true
                 }
             }
         }
@@ -344,30 +351,30 @@ export const fetchPropertyReviewsByUser = async () => {
     return reviews
 };
 
-export const deleteReviewAction = async (prevState: {reviewId: string}) => {
+export const deleteReviewAction = async (prevState: { reviewId: string }) => {
     const { reviewId } = prevState
     const user = await getAuthUser()
     try {
         await db.review.delete({
-            where:{
-                id : reviewId,
+            where: {
+                id: reviewId,
                 profileId: user.id
             }
         })
         revalidatePath('/reviews')
-        return {message : 'Review deleted successfully'}
-    }catch(error){
+        return { message: 'Review deleted successfully' }
+    } catch (error) {
         return renderError(error)
     }
 };
 
 
 
-export const  fetchPropertyRating = async (propertyId : string) => {
+export const fetchPropertyRating = async (propertyId: string) => {
     const result = await db.review.groupBy({
-        by : ['propertyId'],
+        by: ['propertyId'],
         _avg: {
-            rating : true,
+            rating: true,
         },
         _count: {
             rating: true,
@@ -378,13 +385,13 @@ export const  fetchPropertyRating = async (propertyId : string) => {
     })
     return {
         rating: result[0]?._avg.rating?.toFixed() ?? 0,
-        count : result[0]?._count.rating ?? 0
+        count: result[0]?._count.rating ?? 0
     }
 }
 
 export const findExistingReview = async (
-    userId : string,
-    propertyId : string
+    userId: string,
+    propertyId: string
 ) => {
     return db.review.findFirst({
         where: {
@@ -393,3 +400,64 @@ export const findExistingReview = async (
         }
     })
 }
+
+
+
+export const createBookingAction = async (prevState: {
+    propertyId: string;
+    checkIn: Date;
+    checkOut: Date;
+  }) => {
+    const user = await getAuthUser();
+  
+    const { propertyId, checkIn, checkOut } = prevState;
+    const property = await db.property.findUnique({
+      where: { id: propertyId },
+      select: { price: true },
+    });
+    if (!property) {
+      return { message: 'Property not found' };
+    }
+    const { orderTotal, totalNights } = calculateTotals({
+      checkIn,
+      checkOut,
+      price: property.price,
+    });
+    
+    console.log(typeof(`GAMEEDDD ${orderTotal}`))
+
+    try {
+      const booking = await db.booking.create({
+        data: {
+          checkIn,
+          checkOut,
+          orderTotal,
+          totalNights,
+          profileId: user.id,
+          propertyId,
+        },
+      });
+    } catch (error) {
+      return renderError(error);
+    }
+    redirect('/bookings');
+  };
+
+
+  export const gamedAwiKlamdh = async () => {
+    try {
+        const booking = await db.booking.create({
+            data : {
+                checkIn: '',
+                checkOut : '',
+                orderTotal : 20,
+                totalNights: 3,
+                profileId: 'test',
+                propertyId: 'test',
+            }
+        })
+        return {message : 'tamam added booking'}
+    }catch(error) {
+        return renderError(error)
+    }
+  }
