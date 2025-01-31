@@ -79,7 +79,7 @@ export const IconButton = ({actionType} : {actionType : actionType}) => {
     const renderIcon = () => {
         switch (actionType) {
             case 'edit':
-                return <LuSquare  />
+                return <LuPen  />
             case 'delete':
                 return <LuTrash2  />
             default:
