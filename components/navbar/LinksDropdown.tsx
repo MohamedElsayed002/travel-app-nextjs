@@ -48,7 +48,7 @@ const LinksDropdown = () => {
         <SignedIn>
           {
             links.map((link) => {
-              if(link.label === 'admin' && !isAdminUser) return null
+              if (link.label === 'admin' && !isAdminUser) return null;
               return (
                 <DropdownMenuItem key={link.href}>
                   <Link href={link.href} className='capitalize w-full'>
