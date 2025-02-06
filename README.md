@@ -7,3 +7,4 @@ Global Reservation Hub is your one-stop travel app for booking any place you wis
 
 Live Demo 
 <hr/> 
+Explore the app live <a href='https://travel-app-nextjs-theta.vercel.app' target="_blank">Travel BNB</a>
