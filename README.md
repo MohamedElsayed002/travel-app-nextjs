@@ -135,3 +135,21 @@ To get a local copy up and running, follow these steps:
 6. Open your browser at `http://localhost:3000`.
 
 ---
+
+
+## Usage
+
+- **Explore Listings**: Browse vacation rentals by category and location.
+- **Dark Mode Toggle**: Switch themes effortlessly using the dark mode toggle in the navbar.
+- **Authentication**: Log in securely with Clerk.
+- ** Favorite Listing**: To see user favorties rentals
+- ** Admin Page** : to handle the application 
+
+---
+
+## Contact
+
+Mohammad El-sayed - [LinkedIn][https://www.linkedin.com/in/mohamedelsayed2002/]
+
+---
+
