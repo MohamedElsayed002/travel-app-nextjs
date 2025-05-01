@@ -416,50 +416,47 @@ export const createBookingAction = async (prevState: {
     propertyId: string;
     checkIn: Date;
     checkOut: Date;
-}) => {
+  }) => {
     const user = await getAuthUser();
-
     await db.booking.deleteMany({
-        where : {
-            profileId: user.id,
-            paymentStatus: false
-        }
-    })
-
-    let bookingId : null | string = null
+      where: {
+        profileId: user.id,
+        paymentStatus: false,
+      },
+    });
+    let bookingId: null | string = null;
+  
     const { propertyId, checkIn, checkOut } = prevState;
     const property = await db.property.findUnique({
-        where: { id: propertyId },
-        select: { price: true },
+      where: { id: propertyId },
+      select: { price: true },
     });
     if (!property) {
-        return { message: 'Property not found' };
+      return { message: 'Property not found' };
     }
     const { orderTotal, totalNights } = calculateTotals({
-        checkIn,
-        checkOut,
-        price: property.price,
+      checkIn,
+      checkOut,
+      price: property.price,
     });
-
-
+  
     try {
-        const booking = await db.booking.create({
-            data: {
-                checkIn,
-                checkOut,
-                orderTotal,
-                totalNights,
-                profileId: user.id,
-                propertyId,
-            },
-        });
-        bookingId = booking.id
+      const booking = await db.booking.create({
+        data: {
+          checkIn,
+          checkOut,
+          orderTotal,
+          totalNights,
+          profileId: user.id,
+          propertyId,
+        },
+      });
+      bookingId = booking.id;
     } catch (error) {
-        return renderError(error);
+      return renderError(error);
     }
     redirect(`/checkout?bookingId=${bookingId}`);
-};
-
+  };
 
 
 
