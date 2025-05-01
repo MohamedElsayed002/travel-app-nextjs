@@ -441,7 +441,6 @@ export const createBookingAction = async (prevState: {
         price: property.price,
     });
 
-    console.log(typeof (`GAMEEDDD ${orderTotal}`))
 
     try {
         const booking = await db.booking.create({
